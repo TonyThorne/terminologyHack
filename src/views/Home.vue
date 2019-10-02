@@ -8,7 +8,7 @@
         <span class="grey--text text--lighten-1">APPS</span>
     </v-system-bar>
     <v-app-bar dense collapse-on-scroll>
-      <v-toolbar-title class="headline ">
+      <v-toolbar-title>
         NHS Terminology Hack
       </v-toolbar-title>
       <!-- <v-spacer></v-spacer>
