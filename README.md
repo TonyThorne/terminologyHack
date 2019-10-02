@@ -1,4 +1,4 @@
-# ta-docs2
+# Teminology Hack 02/10/2019
 
 ## Project setup
 ```
