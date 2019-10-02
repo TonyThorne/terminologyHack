@@ -17,15 +17,15 @@
             </v-card-title>
           </v-row>
           <!-- <v-row> -->
-                          <!-- <v-switch
+          <!-- <v-switch
                 label="Full Text"
                 color="primary"
                 value="fullText"
-              ></v-switch> -->
-            <!-- <v-radio-group v-model="searchMode" row>
+          ></v-switch>-->
+          <!-- <v-radio-group v-model="searchMode" row>
               <v-radio label="Patial Matching" color="primary" value="partialMatching"></v-radio>
               <v-radio label="Regular Expression" color="red" value="regex"></v-radio>
-            </v-radio-group> -->
+          </v-radio-group>-->
           <!-- </v-row> -->
           <v-row>
             <v-form>
@@ -42,70 +42,57 @@
                     :loading="loading"
                     @keydown.enter.prevent="search"
                     @keydown.delete="clearFilter"
-                    :rules="[rules.required, rules.counter]"
+                    :rules="[rules.required]"
                   ></v-text-field>
                 </v-col>
-                <v-chip-group 
-                  column
-                >
+                <v-chip-group column>
                   <v-chip
-                    v-for="item in semTag" :key="item[0]"
+                    v-for="item in semTag"
+                    :key="item[0]"
                     small
                     @click="setSemanticFilter(item[0])"
                   >{{ item[0] }}: {{ item[1] }}</v-chip>
                 </v-chip-group>
                 <v-simple-table dense v-show="searchResultsTotal">
-                <!-- <v-flex xs12 v-show="searchResultsTotal"> -->
+                  <!-- <v-flex xs12 v-show="searchResultsTotal"> -->
                   <thead>
                     <tr>
-                      <th class="text-left">Term</th>
-                      <th class="text-left">FSN</th>
+                      <th class="text-left">Code</th>
+                      <th class="text-left">Concept</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="item in searchResult" 
-                      @click="setSelectedTerm(item.conceptId)"
-                    >
-                      <td>{{ item.term }}</td>
-                      <td>{{ item.fsn }}</td>
+                    <tr v-for="item in searchResult.contains" @click="setSelectedTerm(item.code)">
+                      <td>{{ item.code }}</td>
+                      <td>{{ item.display }}</td>
                     </tr>
                   </tbody>
-                <!-- </v-flex> -->
+                  <!-- </v-flex> -->
                 </v-simple-table>
                 <v-dialog
                   v-model="selectedTerm"
-                  persistent :overlay="false"
+                  persistent
+                  :overlay="false"
                   max-width="500px"
                   transition="dialog-transition"
                 >
-                <v-card>
-                  <v-card-title
-                    class="headline grey lighten-2"
-                    primary-title
-                  >
-                    Term Details
-                  </v-card-title>
-                  <v-card-text>
-                    <ul>
-                      <li>The selected term is: {{ selectedConceptId }}</li>
-                      <li>Default Term: {{ conceptDetails.defaultTerm }}</li>
-                    </ul>
-                    
-                    
-                  </v-card-text>
-                  <v-divider></v-divider>
-                  <v-card-actions>
-                    <div class="flex-grow-1"></div>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="selectedTerm = false"
-                    >
-                      Close
-                    </v-btn>
-                  </v-card-actions>
-                </v-card> 
+                  <v-card>
+                    <v-card-title class="headline grey lighten-2" primary-title>Concept Details</v-card-title>
+                    <v-card-text>
+                      <ul>
+                        <li>The selected term is: {{ selectedConceptId }}</li>
+                        <!-- <li>Default Term: {{ conceptDetails.defaultTerm }}</li> -->
+                      </ul>Synonyms
+                      <ul v-for="item in conceptSynonyms">
+                        <li>{{ item }}</li>
+                      </ul>
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <div class="flex-grow-1"></div>
+                      <v-btn color="primary" text @click="selectedTerm = false">Close</v-btn>
+                    </v-card-actions>
+                  </v-card>
                 </v-dialog>
               </v-container>
             </v-form>
@@ -128,12 +115,13 @@ export default {
     query: "",
     returnLimit: 25,
     returnedTotal: null,
-    searchResult: [{"conceptId":"1234", "term":"Headache", "fsn":"foo"}],
+    searchResult: [{ conceptId: "1234", term: "Headache", fsn: "foo" }],
     searchResultsTotal: null,
     selectedTerm: false,
-    selectedConceptId: '',
-    conceptDetails: '',
+    selectedConceptId: "",
+    conceptDetails: "",
     semTag: null, //Object.entries({'procedure': 6, 'disorder': 1, 'finding': 3, 'situation': 2, 'morphologic abnormality': 2}),
+    conceptSynonyms: [],
     semanticFilter: null,
     searchLabel: "Snomed search",
     searchMode: "partialMatching", //partialMatching, fullText, regex
@@ -163,25 +151,32 @@ export default {
       axios({
         method: "get",
         url:
-          "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/descriptions",
+          // "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/descriptions",
+          "https://stu3.ontoserver.csiro.au/fhir/ValueSet/$expand",
         headers: {},
         params: {
-          query: this.searchString,
-          returnLimit: this.returnLimit,
-          statusFilter: "activeOnly",
-          semanticFilter: this.semanticFilter, // e.g. 'procedure' - passed from semTag
-          searchMode: this.searchMode,
-          normalize: true,
-          lang: "english",
-          skipTo: 0
+          activeOnly: true,
+          filter: this.searchString,
+          count: this.returnLimit,
+          _format: "json",
+          elements:
+            "expansion.contains.code,expansion.contains.display,expansion.contains.fullySpecifiedName,expansion.contains.active",
+          url:
+            "http://snomed.info/sct/32506021000036107/version/20131130?fhir_vs"
+          // statusFilter: "activeOnly",
+          // semanticFilter: this.semanticFilter, // e.g. 'procedure' - passed from semTag
+          // searchMode: this.searchMode,
+          // normalize: true,
+          // lang: "english",
+          // skipTo: 0
         }
       })
         .then(response => {
           // Set the data element 'items' to the response data.
-          this.searchResult = response.data.matches;
-          // console.log("Search results", this.searchResult)
+          this.searchResult = response.data.expansion;
+          console.log("Search results", this.searchResult);
           // Dispay the total of items returned
-          this.searchResultsTotal = response.data.details.total;
+          this.searchResultsTotal = response.data.expansion.total;
           // To show 'Showing x of xxx results' label, this caters for those searches less than the set limit
           if (this.searchResultsTotal < this.returnLimit) {
             this.returnedTotal = this.searchResultsTotal;
@@ -189,7 +184,7 @@ export default {
             this.returnedTotal = this.returnLimit;
           }
           // Set the chips with semTag responses
-          this.semTag = Object.entries(response.data.filters.semTag);
+          // this.semTag = Object.entries(response.data.filters.semTag);
           // Set the search label
           this.searchLabel =
             "Showing " +
@@ -201,56 +196,71 @@ export default {
           this.loading = false;
         })
         .catch(error => {
-          console.log("This is error", error)
-          this.loading = false
+          console.log("This is error", error);
+          this.loading = false;
         });
     },
     setSemanticFilter(item) {
       // console.log(item)
       // Set the filter to the value of the selected chip
-      this.semanticFilter = item
-      this.loading = true
+      this.semanticFilter = item;
+      this.loading = true;
       // Run search again - this time with Semantic filter set
       this.search();
     },
     getSelectedTermDetails(conceptId) {
       if (!conceptId) {
-        console.log('No conceptId!')
+        console.log("No conceptId!");
       } else {
-        this.loading = true
+        this.loading = true;
         axios({
           method: "get",
           url:
-            "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/concepts/" + conceptId
+            // "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/concepts/" + conceptId
+            "https://ontoserver.dataproducts.nhs.uk/fhir/CodeSystem/$lookup?system=http://snomed.info/sct&_format=json&code=" +
+            conceptId
         })
-        .then(response => {
-          console.log(response.data)
-          this.conceptDetails = response.data
-          this.loading = false
-        })
-        .catch(error => {
-          console.log("This is error", error)
-          this.loading = false
-        })
+          .then(response => {
+            // console.log(response.data)
+            this.conceptDetails = response.data;
+            const synonyms = [];
+            var foo = response.data.parameter.filter(function(prop) {
+              if (
+                prop.name == "designation" &&
+                prop.part[1].valueCoding.code === "900000000000013009"
+              ) {
+                return prop.part[2];
+              }
+            });
+            for (let index = 0; index < foo.length; index++) {
+              synonyms.push(foo[index].part[2].valueString);
+            }
+            this.conceptSynonyms = synonyms;
+            this.loading = false;
+          })
+          .catch(error => {
+            console.log("This is error", error);
+            this.loading = false;
+          });
       }
     },
     setSelectedTerm(conceptId) {
       // When a term is selected, set the selectedTerm to true to trigger dialog
-        console.log('Selected Term:', conceptId)
-        this.selectedTerm = true
-        this.selectedConceptId = conceptId
-        this.getSelectedTermDetails(conceptId)
+      console.log("Selected Term:", conceptId);
+      this.selectedTerm = true;
+      this.selectedConceptId = conceptId;
+      this.getSelectedTermDetails(conceptId);
     },
     clearData() {
       // console.log('clearData')
-      this.searchResult = []
-      this.searchString = ""
-      this.searchResultsTotal = null
-      this.returnedTotal = null
-      this.searchLabel = "Snomed search"
-      this.loading = false
-      this.semanticFilter = null
-      this.semTag = null
+      this.searchResult = [];
+      this.searchString = "";
+      this.searchResultsTotal = null;
+      this.returnedTotal = null;
+      this.searchLabel = "Snomed search";
+      this.loading = false;
+      this.semanticFilter = null;
+      this.semTag = null;
     },
     clearFilter() {
       // This is used when the user presses the delete or backspace key in search field
@@ -276,6 +286,6 @@ export default {
   min-height: 10vh;
 }
 tbody tr:nth-of-type(even) {
-   background-color: rgba(0, 0, 0, .05);
- }
+  background-color: rgba(0, 0, 0, 0.05);
+}
 </style>
