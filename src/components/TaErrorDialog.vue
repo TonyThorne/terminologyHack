@@ -5,7 +5,7 @@
       <v-card-text>Error message: {{ errorMsg }}</v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="green darken-1" flat @click="clearData">OK</v-btn>
+        <v-btn color="primary" @click="clearData">OK</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

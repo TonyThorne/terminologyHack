@@ -1,6 +1,4 @@
 <template>
-  <!-- This component is to explore the NHS Snomed browser found at https://termbrowser.nhs.uk -->
-  <!-- The boilerplate code is taken from the example of autocomplete from the Vuetify site -->
   <v-app>
     <v-container>
       <v-card>
@@ -10,23 +8,9 @@
               <div>
                 <h4 class="headline mb-0">Simple snomed search</h4>
               </div>
-              <!-- Loading component, prop is Boolean bound to loading -->
-              <!-- <ta-loading :loading="loading"></ta-loading> -->
-              <!-- Error dialog, prop is the error string and listens for clearData -->
               <ta-error-dialog :errorMsg="errorMsg" @clearData="clearData"></ta-error-dialog>
             </v-card-title>
           </v-row>
-          <!-- <v-row> -->
-          <!-- <v-switch
-                label="Full Text"
-                color="primary"
-                value="fullText"
-          ></v-switch>-->
-          <!-- <v-radio-group v-model="searchMode" row>
-              <v-radio label="Patial Matching" color="primary" value="partialMatching"></v-radio>
-              <v-radio label="Regular Expression" color="red" value="regex"></v-radio>
-          </v-radio-group>-->
-          <!-- </v-row> -->
           <v-row>
             <v-form>
               <v-container>
@@ -53,6 +37,8 @@
                     @click="setSemanticFilter(item[0])"
                   >{{ item[0] }}: {{ item[1] }}</v-chip>
                 </v-chip-group>
+                <!-- Error dialog, prop is the error string and listens for clearData -->
+                <ta-error-dialog :errorMsg="errorMsg"  @clearData="clearData"></ta-error-dialog>
                 <v-simple-table dense v-show="searchResultsTotal">
                   <!-- <v-flex xs12 v-show="searchResultsTotal"> -->
                   <thead>
@@ -67,7 +53,6 @@
                       <td>{{ item.display }}</td>
                     </tr>
                   </tbody>
-                  <!-- </v-flex> -->
                 </v-simple-table>
                 <v-dialog
                   v-model="selectedTerm"
@@ -81,7 +66,6 @@
                     <v-card-text>
                       <ul>
                         <li>The selected term is: {{ selectedConceptId }}</li>
-                        <!-- <li>Default Term: {{ conceptDetails.defaultTerm }}</li> -->
                       </ul>Synonyms
                       <ul v-for="item in conceptSynonyms">
                         <li>{{ item }}</li>
@@ -106,7 +90,6 @@
 <script>
 const axios = require("axios");
 import ErrorDialog from "./TaErrorDialog.vue";
-import { error } from "util";
 
 export default {
   data: () => ({
@@ -142,17 +125,13 @@ export default {
         console.log("Search string too short");
         return;
       }
-      // if (this.searchMode === 'partialMatching') {
-      //   this.query = this.searchString
-      // } else if (this.searchMode === 'regex') {
-      //   this.query = '^' + this.searchString
-      // }
       this.loading = true;
       axios({
         method: "get",
         url:
           // "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/descriptions",
-          "https://stu3.ontoserver.csiro.au/fhir/ValueSet/$expand",
+          // "https://stu3.ontoserver.csiro.au/fhir/ValueSet/$expand",
+          "https://ontoserver.dataproducts.nhs.uk/fhir/ValueSet/$expand",
         headers: {},
         params: {
           activeOnly: true,
@@ -161,14 +140,7 @@ export default {
           _format: "json",
           elements:
             "expansion.contains.code,expansion.contains.display,expansion.contains.fullySpecifiedName,expansion.contains.active",
-          url:
-            "http://snomed.info/sct/32506021000036107/version/20131130?fhir_vs"
-          // statusFilter: "activeOnly",
-          // semanticFilter: this.semanticFilter, // e.g. 'procedure' - passed from semTag
-          // searchMode: this.searchMode,
-          // normalize: true,
-          // lang: "english",
-          // skipTo: 0
+          url: "http://snomed.info/sct?fhir_vs"
         }
       })
         .then(response => {
@@ -183,8 +155,6 @@ export default {
           } else {
             this.returnedTotal = this.returnLimit;
           }
-          // Set the chips with semTag responses
-          // this.semTag = Object.entries(response.data.filters.semTag);
           // Set the search label
           this.searchLabel =
             "Showing " +
@@ -197,6 +167,7 @@ export default {
         })
         .catch(error => {
           console.log("This is error", error);
+          this.$store.dispatch("setErrorMsg", error)
           this.loading = false;
         });
     },
@@ -209,6 +180,7 @@ export default {
       this.search();
     },
     getSelectedTermDetails(conceptId) {
+      // Get the synonyms for the selected term
       if (!conceptId) {
         console.log("No conceptId!");
       } else {
@@ -216,7 +188,6 @@ export default {
         axios({
           method: "get",
           url:
-            // "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/concepts/" + conceptId
             "https://ontoserver.dataproducts.nhs.uk/fhir/CodeSystem/$lookup?system=http://snomed.info/sct&_format=json&code=" +
             conceptId
         })
@@ -246,7 +217,7 @@ export default {
     },
     setSelectedTerm(conceptId) {
       // When a term is selected, set the selectedTerm to true to trigger dialog
-      console.log("Selected Term:", conceptId);
+      // console.log("Selected Term:", conceptId);
       this.selectedTerm = true;
       this.selectedConceptId = conceptId;
       this.getSelectedTermDetails(conceptId);
