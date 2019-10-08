@@ -21,21 +21,7 @@
 
     <v-content>
       <v-container fluid>
-        <v-card >
-          <v-img
-            class="white--text"
-            height="200px"
-            src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
-          >
-            <v-card-title @click="show = !show" class="align-end fill-height">I'm a title</v-card-title>
-          </v-img>
-          <v-slide-y-transition>
-            <v-card-text v-show="show">
-              Example text
-            </v-card-text>
-          </v-slide-y-transition>
-        </v-card>
-
+        <!-- The following SnomedSearch is a component TaSnonedSearach.vue on ./components -->
         <SnomedSearch/>
       </v-container>
     </v-content>

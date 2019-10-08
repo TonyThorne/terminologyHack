@@ -1,4 +1,4 @@
-# Teminology Hack 02/10/2019
+# Terminology Hack 02/10/2019
 
 This is a very simple app created as part of NHS Terminology Connectathon 02/10/2019.
 
@@ -6,7 +6,7 @@ It allows you to search for a snomed term and view any associated synonyms for t
 
 The application is written using the following stack.
 
-* Vue.js (version XX) - Core JS library for creating single page apps
+* Vue.js (version 3.0.0) - Core JS library for creating single page apps
 * Vuetify (version 2.x) - UI component framework for visual aspects
 * Axios - data retrieval
 * VUEX for state management (but only for errors)

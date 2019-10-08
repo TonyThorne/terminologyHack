@@ -6,15 +6,15 @@
           <v-row>
             <v-card-title primary-title>
               <div>
-                <h4 class="headline mb-0">Simple snomed search</h4>
+                <h4 class="headline ">Simple snomed search</h4>
               </div>
               <ta-error-dialog :errorMsg="errorMsg" @clearData="clearData"></ta-error-dialog>
             </v-card-title>
           </v-row>
           <v-row>
             <v-form>
-              <v-container>
-                <v-col cols="12">
+              <v-container fluid>
+                <v-col>
                   <v-text-field
                     :label="searchLabel"
                     v-model="searchString"
@@ -48,7 +48,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in searchResult.contains" @click="setSelectedTerm(item.code)">
+                    <tr v-for="item in searchResult.contains" :key="item.key" @click="setSelectedTerm(item.code)">
                       <td>{{ item.code }}</td>
                       <td>{{ item.display }}</td>
                     </tr>
@@ -67,7 +67,7 @@
                       <ul>
                         <li>The selected term is: {{ selectedConceptId }}</li>
                       </ul>Synonyms
-                      <ul v-for="item in conceptSynonyms">
+                      <ul v-for="item in conceptSynonyms" :key="item.key">
                         <li>{{ item }}</li>
                       </ul>
                     </v-card-text>
@@ -122,7 +122,8 @@ export default {
   methods: {
     search() {
       if (this.searchString.length <= 1) {
-        console.log("Search string too short");
+        // console.log("Search string too short");
+        this.$store.dispatch("setErrorMsg", "Search string too short")
         return;
       }
       this.loading = true;
@@ -146,7 +147,7 @@ export default {
         .then(response => {
           // Set the data element 'items' to the response data.
           this.searchResult = response.data.expansion;
-          console.log("Search results", this.searchResult);
+          // console.log("Search results", this.searchResult);
           // Dispay the total of items returned
           this.searchResultsTotal = response.data.expansion.total;
           // To show 'Showing x of xxx results' label, this caters for those searches less than the set limit
@@ -166,7 +167,7 @@ export default {
           this.loading = false;
         })
         .catch(error => {
-          console.log("This is error", error);
+          // console.log("This is error", error);
           this.$store.dispatch("setErrorMsg", error)
           this.loading = false;
         });
@@ -182,7 +183,8 @@ export default {
     getSelectedTermDetails(conceptId) {
       // Get the synonyms for the selected term
       if (!conceptId) {
-        console.log("No conceptId!");
+        // console.log("No conceptId!");
+        this.$store.dispatch("setErrorMsg", "No conceptId!")
       } else {
         this.loading = true;
         axios({
@@ -210,7 +212,8 @@ export default {
             this.loading = false;
           })
           .catch(error => {
-            console.log("This is error", error);
+            this.$store.dispatch("setErrorMsg", error)
+            // console.log("This is error", error);
             this.loading = false;
           });
       }
