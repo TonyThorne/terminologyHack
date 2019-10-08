@@ -130,8 +130,6 @@ export default {
       axios({
         method: "get",
         url:
-          // "https://termbrowser.nhs.uk/sct-browser-api/snomed/uk-edition/v20190601/descriptions",
-          // "https://stu3.ontoserver.csiro.au/fhir/ValueSet/$expand",
           "https://ontoserver.dataproducts.nhs.uk/fhir/ValueSet/$expand",
         headers: {},
         params: {

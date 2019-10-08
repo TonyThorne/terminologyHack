@@ -12,6 +12,8 @@ The application is written using the following stack.
 * VUEX for state management (but only for errors)
 * Vue Router for page navigation (but only used for about screen)
 
+The terminology server is https://ontoserver.dataproducts.nhs.uk/ 
+
 There are no unit tests!
 
 
