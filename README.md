@@ -16,6 +16,9 @@ The terminology server is https://ontoserver.dataproducts.nhs.uk/
 
 There are no unit tests!
 
+## CORS 
+
+If you have CORS errors when running locally, try a Chrome CORS extension, such as Moesif CORS. 
 
 ## Project setup
 ```
